@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button as VanButton } from 'vant'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores'
 
 const userStore = useUserStore()
 </script>
@@ -20,7 +20,7 @@ const userStore = useUserStore()
     "
     >添加信息
   </van-button>
-  <van-button type="primary" @click="userStore.clearUser">清空信息 </van-button>
+  <van-button type="primary" @click="userStore.clearUser">清空信息</van-button>
 </template>
 <style scoped lang="scss">
 .main {
