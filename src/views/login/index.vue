@@ -1,14 +1,24 @@
 <script setup lang="ts">
-import { mobileRules, passwordRules } from '@/utils/rules'
+import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 import { ref } from 'vue'
 import { showToast } from 'vant'
+import { loginAsPassword } from '@/services/user'
+import { useUserStore } from '@/stores'
+import { useRoute } from 'vue-router'
+import router from '@/router'
 
-const mobile = ref('')
-const password = ref('')
+const route = useRoute()
+const mobile = ref('13230000066')
+const password = ref('abc12345')
+const code = ref('')
 const agree = ref(false)
-const login = () => {
+const isPassword = ref(true)
+const userStore = useUserStore()
+const login = async () => {
   if (!agree.value) return showToast('请勾选协议')
-  console.log(123)
+  const res = await loginAsPassword(mobile.value, password.value)
+  userStore.setUser(res.data)
+  router.push((route.query.returnUrl as string) || '/user')
 }
 </script>
 
@@ -20,9 +30,9 @@ const login = () => {
     ></cp-nav-bar>
     <!-- 头部 -->
     <div class="login-head">
-      <h3>密码登录</h3>
-      <a href="javascript:;">
-        <span>短信验证码登录</span>
+      <h3>{{ isPassword ? '密码登录' : '短信验证码登录' }}</h3>
+      <a href="javascript:;" @click="isPassword = !isPassword">
+        <span>{{ !isPassword ? '密码登录' : '短信验证码登录' }}</span>
         <van-icon name="arrow"></van-icon>
       </a>
     </div>
@@ -35,11 +45,22 @@ const login = () => {
         v-model="mobile"
       ></van-field>
       <van-field
+        v-if="isPassword"
         placeholder="请输入密码"
         type="password"
         :rules="passwordRules"
         v-model="password"
       ></van-field>
+      <van-field
+        v-else
+        placeholder="请输入验证码"
+        :rules="codeRules"
+        v-model="code"
+      >
+        <template #button>
+          <span class="btn-send">获取验证码</span>
+        </template>
+      </van-field>
       <div class="cp-cell">
         <van-checkbox v-model="agree">
           <span>我已同意</span>
@@ -50,8 +71,8 @@ const login = () => {
       </div>
       <div class="cp-cell">
         <van-button block round type="primary" native-type="submit"
-          >登 录</van-button
-        >
+          >登 录
+        </van-button>
       </div>
       <div class="cp-cell">
         <a href="javascript:;">忘记密码？</a>

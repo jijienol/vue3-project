@@ -20,3 +20,13 @@ export const passwordRules: FieldRule[] = [
     message: '密码格式不正确'
   }
 ]
+export const codeRules: FieldRule[] = [
+  {
+    required: true,
+    message: '请输入短信验证码'
+  },
+  {
+    pattern: /^\d{6}$/,
+    message: '短信验证码格式不正确'
+  }
+]
