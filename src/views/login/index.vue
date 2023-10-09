@@ -1,24 +1,45 @@
 <script setup lang="ts">
 import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 import { ref } from 'vue'
-import { showToast } from 'vant'
-import { loginAsPassword } from '@/services/user'
+import { showSuccessToast, showToast } from 'vant'
+import type { FormInstance } from 'vant'
+import { getMobileCode, loginAsPassword } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 
+const time = ref(0)
 const route = useRoute()
+const form = ref<FormInstance>()
 const mobile = ref('13230000066')
 const password = ref('abc12345')
+let timer: number
 const code = ref('')
 const agree = ref(false)
 const isPassword = ref(true)
 const userStore = useUserStore()
+// 密码登录
 const login = async () => {
   if (!agree.value) return showToast('请勾选协议')
   const res = await loginAsPassword(mobile.value, password.value)
   userStore.setUser(res.data)
   router.push((route.query.returnUrl as string) || '/user')
+}
+// 发送短信验证码
+const sendCode = async () => {
+  if (time.value > 0) return
+  if (!agree.value) return showToast('请勾选协议')
+  form.value?.validate('mobile')
+  await getMobileCode(mobile.value, 'login')
+  showSuccessToast('获取验证码成功')
+  console.log('成功')
+  time.value = 60
+  setInterval(() => {
+    time.value--
+    if (time.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
 }
 </script>
 
@@ -37,9 +58,10 @@ const login = async () => {
       </a>
     </div>
     <!-- 表单 -->
-    <van-form autocomplete="off" @submit="login">
+    <van-form autocomplete="off" @submit="login" ref="form">
       <van-field
         placeholder="请输入手机号"
+        name="mobile"
         type="tel"
         :rules="mobileRules"
         v-model="mobile"
@@ -58,7 +80,12 @@ const login = async () => {
         v-model="code"
       >
         <template #button>
-          <span class="btn-send">获取验证码</span>
+          <span
+            class="btn-send"
+            :class="{ active: time > 0 }"
+            @click="sendCode"
+            >{{ time > 0 ? `${time}后获取成功` : '获取验证码' }}</span
+          >
         </template>
       </van-field>
       <div class="cp-cell">
