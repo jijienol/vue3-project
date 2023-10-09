@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import { showSuccessToast, showToast } from 'vant'
 import type { FormInstance } from 'vant'
-import { getMobileCode, loginAsPassword } from '@/services/user'
+import { getMobileCode, loginAsCode, loginAsPassword } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
 import router from '@/router'
@@ -18,10 +18,14 @@ const code = ref('')
 const agree = ref(false)
 const isPassword = ref(true)
 const userStore = useUserStore()
-// 密码登录
+// 登录
 const login = async () => {
   if (!agree.value) return showToast('请勾选协议')
-  const res = await loginAsPassword(mobile.value, password.value)
+  // 判断是密码登录还是验证码登录
+  const res = isPassword.value
+    ? await loginAsPassword(mobile.value, password.value)
+    : await loginAsCode(mobile.value, code.value)
+
   userStore.setUser(res.data)
   router.push((route.query.returnUrl as string) || '/user')
 }
@@ -41,14 +45,12 @@ const sendCode = async () => {
     }
   }, 1000)
 }
+onUnmounted(() => clearInterval(timer))
 </script>
 
 <template>
   <div class="login-page">
-    <cp-nav-bar
-      right-text="注册"
-      @click-right="$router.push('/register')"
-    ></cp-nav-bar>
+    <cp-nav-bar right-text="注册" @click-right="$router.push('/register')"></cp-nav-bar>
     <!-- 头部 -->
     <div class="login-head">
       <h3>{{ isPassword ? '密码登录' : '短信验证码登录' }}</h3>
@@ -59,13 +61,7 @@ const sendCode = async () => {
     </div>
     <!-- 表单 -->
     <van-form autocomplete="off" @submit="login" ref="form">
-      <van-field
-        placeholder="请输入手机号"
-        name="mobile"
-        type="tel"
-        :rules="mobileRules"
-        v-model="mobile"
-      ></van-field>
+      <van-field placeholder="请输入手机号" name="mobile" type="tel" :rules="mobileRules" v-model="mobile"></van-field>
       <van-field
         v-if="isPassword"
         placeholder="请输入密码"
@@ -73,19 +69,11 @@ const sendCode = async () => {
         :rules="passwordRules"
         v-model="password"
       ></van-field>
-      <van-field
-        v-else
-        placeholder="请输入验证码"
-        :rules="codeRules"
-        v-model="code"
-      >
+      <van-field v-else placeholder="请输入验证码" :rules="codeRules" v-model="code">
         <template #button>
-          <span
-            class="btn-send"
-            :class="{ active: time > 0 }"
-            @click="sendCode"
-            >{{ time > 0 ? `${time}后获取成功` : '获取验证码' }}</span
-          >
+          <span class="btn-send" :class="{ active: time > 0 }" @click="sendCode">{{
+            time > 0 ? `${time}后获取成功` : '获取验证码'
+          }}</span>
         </template>
       </van-field>
       <div class="cp-cell">
@@ -97,9 +85,7 @@ const sendCode = async () => {
         </van-checkbox>
       </div>
       <div class="cp-cell">
-        <van-button block round type="primary" native-type="submit"
-          >登 录
-        </van-button>
+        <van-button block round type="primary" native-type="submit">登 录</van-button>
       </div>
       <div class="cp-cell">
         <a href="javascript:;">忘记密码？</a>
