@@ -2,6 +2,7 @@
 
 <template>
   <router-view></router-view>
+  <router-link to="/login">去登陆</router-link>
 </template>
 <style scoped lang="scss">
 .main {

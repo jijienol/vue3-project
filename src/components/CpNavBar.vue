@@ -6,9 +6,13 @@ type Props = {
 defineProps<Props>()
 const emits = defineEmits<{
   (e: 'click-right'): void
+  (e: 'click-left'): void
 }>()
 const onClickRight = () => {
   emits('click-right')
+}
+const onClickLeft = () => {
+  emits('click-left')
 }
 </script>
 <template>
@@ -18,6 +22,7 @@ const onClickRight = () => {
       left-arrow
       :right-text="rightText"
       @click-right="onClickRight"
+      @click-left="onClickLeft"
     ></van-nav-bar>
   </div>
 </template>
