@@ -1,5 +1,6 @@
 import { request } from '@/utils/request'
-import type { User } from '@/types/user'
+import type { User, UserInfo } from '@/types/user'
+import type { PatientList } from '@/types/user'
 
 // 密码登录
 export const loginAsPassword = (mobile: string, password: string) => {
@@ -13,4 +14,10 @@ export const loginAsCode = (mobile: string, code: string) => {
 type CodeType = 'login' | 'register' | 'changeMobile' | 'forgetPassword' | 'bindMobile'
 export const getMobileCode = (mobile: string, type: CodeType) => {
   return request('/code', 'get', { mobile, type })
+}
+export const getUserInfo = () => {
+  return request<UserInfo>('/patient/myUser', 'get')
+}
+export const getPatientList = () => {
+  return request<PatientList>('/patient/mylist', 'get')
 }

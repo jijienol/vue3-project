@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import router from '@/router'
+
 type Props = {
   title?: string
   rightText?: string
+  back?: () => void
 }
-defineProps<Props>()
+const prop = defineProps<Props>()
 const emits = defineEmits<{
   (e: 'click-right'): void
   (e: 'click-left'): void
@@ -12,7 +15,12 @@ const onClickRight = () => {
   emits('click-right')
 }
 const onClickLeft = () => {
-  emits('click-left')
+  if (prop.back) return prop.back()
+  if (history.state.back) {
+    router.back()
+  } else {
+    router.push('/user')
+  }
 }
 </script>
 <template>

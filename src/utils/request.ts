@@ -51,7 +51,7 @@ type Data<T> = {
   message: string
   data: T
 }
-export const request = <T>(url: string, method: Method, submitData: object) => {
+export const request = <T>(url: string, method: Method, submitData?: object) => {
   return instance.request<any, Data<T>>({
     url,
     method,
