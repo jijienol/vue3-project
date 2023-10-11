@@ -7,6 +7,7 @@ import { getMobileCode, loginAsCode, loginAsPassword } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
 import router from '@/router'
+import CpIcon from '@/components/CpIcon.vue'
 
 const time = ref(0)
 const route = useRoute()
@@ -18,6 +19,7 @@ const code = ref('')
 const agree = ref(false)
 const isPassword = ref(true)
 const userStore = useUserStore()
+const showPassword = ref(false)
 // 登录
 const login = async () => {
   if (!agree.value) return showToast('请勾选协议')
@@ -65,10 +67,14 @@ onUnmounted(() => clearInterval(timer))
       <van-field
         v-if="isPassword"
         placeholder="请输入密码"
-        type="password"
+        :type="showPassword ? 'text' : 'password'"
         :rules="passwordRules"
         v-model="password"
-      ></van-field>
+      >
+        <template #button>
+          <cp-icon :name="`login-eye-${showPassword ? 'on' : 'off'}`" @click="showPassword = !showPassword"></cp-icon>
+        </template>
+      </van-field>
       <van-field v-else placeholder="请输入验证码" :rules="codeRules" v-model="code">
         <template #button>
           <span class="btn-send" :class="{ active: time > 0 }" @click="sendCode">{{
@@ -91,6 +97,7 @@ onUnmounted(() => clearInterval(timer))
         <a href="javascript:;">忘记密码？</a>
       </div>
     </van-form>
+
     <!-- 底部 -->
     <div class="login-other">
       <van-divider>第三方登录</van-divider>
